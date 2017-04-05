@@ -2,23 +2,15 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.Date;
 
 /**
  * Created by Sem on 05.04.2017.
  */
 public class Sensor {
-    private Produkt product;
-
-    public Sensor(){
-
-    }
 
     private void send(String name, String datum, int menge) throws IOException {
         String sendstring = name + ";" + datum + ";" + menge;
-
-        //tollersendeteil
 
         InetAddress ia = InetAddress.getByName("localhost");
         int port = 4711;
