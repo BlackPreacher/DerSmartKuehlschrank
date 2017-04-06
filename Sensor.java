@@ -9,10 +9,20 @@ import java.util.Date;
  */
 public class Sensor {
 
+    private String ip;
+
+    public Sensor(String ip){
+        this.ip = ip;
+    }
+
+    public Sensor(){
+        ip = "localhost";
+    }
+
     private void send(String name, String datum, int menge) throws IOException {
         String sendstring = name + ";" + datum + ";" + menge;
 
-        InetAddress ia = InetAddress.getByName("localhost");
+        InetAddress ia = InetAddress.getByName(ip);
         int port = 4711;
         byte[] data = sendstring.getBytes();
         DatagramPacket packet = new DatagramPacket( data, data.length, ia, port );
@@ -21,10 +31,21 @@ public class Sensor {
     }
 
     public static void main (String args[]) throws IOException {
-        Sensor s1 = new Sensor();
-        Sensor s2 = new Sensor();
-        Sensor s3 = new Sensor();
-        Sensor s4 = new Sensor();
+        Sensor s1, s2, s3, s4;
+
+        try{
+            s1 = new Sensor(args[0]);
+            s2 = new Sensor(args[0]);
+            s3 = new Sensor(args[0]);
+            s4 = new Sensor(args[0]);
+        }catch(Exception e){
+            s1 = new Sensor();
+            s2 = new Sensor();
+            s3 = new Sensor();
+            s4 = new Sensor();
+        }
+
+
 
         int sec = 20;
 
