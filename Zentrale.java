@@ -4,6 +4,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Date;
+import java.text.SimpleDateFormat;
 
 /**
  * Created by Hellhero on 05.04.2017.
@@ -12,10 +13,18 @@ public class Zentrale {
 
     private ArrayList<Produkt> alleprodukte;
     private DatagramSocket socket;
+    private int usedport;
 
 
     public Zentrale() throws IOException {
-        socket = new DatagramSocket(4711);
+        usedport = 4711;
+        socket = new DatagramSocket(usedport);
+        alleprodukte = new ArrayList<>();
+    }
+
+    public Zentrale(String port) throws IOException{
+        usedport = Integer.parseInt(port);
+        socket = new DatagramSocket(usedport);
         alleprodukte = new ArrayList<>();
     }
 
@@ -30,8 +39,20 @@ public class Zentrale {
             byte[] data = packet.getData();
 
             String message = new String( data,0, packet.getLength());
-            System.out.println(message);
+
             String[] parts = message.split(";");
+
+            //Datumsparser
+            long timeconvert = Long.parseLong(parts[1]);
+            Date time = new Date(timeconvert);
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            String date = sdf.format(timeconvert);
+
+            System.out.println("Inhalt: " + parts[0]);
+            System.out.println("Datum: " + date);
+            System.out.println("Menge: " + parts[2] + "\r\n");
+
+
             try {
                 newValue(parts[0], parts[1], Integer.parseInt(parts[2]));
             }catch(Exception ex){
@@ -61,9 +82,15 @@ public class Zentrale {
 
 
     public static void main (String args[]) throws IOException {
+        Zentrale kuehlschrank;
 
-        Zentrale keks = new Zentrale();
-        keks.receive();
+        try{
+            kuehlschrank = new Zentrale(args[0]);
+        }catch(Exception e){
+            kuehlschrank = new Zentrale();
+        }
+
+        kuehlschrank.receive();
 
     }
 

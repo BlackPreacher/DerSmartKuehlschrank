@@ -10,22 +10,24 @@ import java.util.Date;
 public class Sensor {
 
     private String ip;
+    private int usedport;
 
-    public Sensor(String ip){
+    public Sensor(String ip, String port){
         this.ip = ip;
+        usedport = Integer.parseInt(port);
     }
 
     public Sensor(){
         ip = "localhost";
+        usedport = 4711;
     }
 
     private void send(String name, String datum, int menge) throws IOException {
         String sendstring = name + ";" + datum + ";" + menge;
 
         InetAddress ia = InetAddress.getByName(ip);
-        int port = 4711;
         byte[] data = sendstring.getBytes();
-        DatagramPacket packet = new DatagramPacket( data, data.length, ia, port );
+        DatagramPacket packet = new DatagramPacket( data, data.length, ia, usedport );
         DatagramSocket toSocket = new DatagramSocket();
         toSocket.send( packet );
     }
@@ -34,10 +36,10 @@ public class Sensor {
         Sensor s1, s2, s3, s4;
 
         try{
-            s1 = new Sensor(args[0]);
-            s2 = new Sensor(args[0]);
-            s3 = new Sensor(args[0]);
-            s4 = new Sensor(args[0]);
+            s1 = new Sensor(args[0], args[1]);
+            s2 = new Sensor(args[0], args[1]);
+            s3 = new Sensor(args[0], args[1]);
+            s4 = new Sensor(args[0], args[1]);
         }catch(Exception e){
             s1 = new Sensor();
             s2 = new Sensor();
@@ -45,15 +47,13 @@ public class Sensor {
             s4 = new Sensor();
         }
 
-
-
         int sec = 20;
 
         while(sec > 0){
-            s1.send("Kekse", new Date().toString(), sec);
-            s2.send("Bier", new Date().toString(), sec);
-            s3.send("Kaese", new Date().toString(), sec);
-            s4.send("Warmer Apfelkuchen", new Date().toString(), sec);
+            s1.send("Kekse", String.valueOf(System.currentTimeMillis()), sec);
+            s2.send("Bier", String.valueOf(System.currentTimeMillis()), sec);
+            s3.send("Kaese", String.valueOf(System.currentTimeMillis()), sec);
+            s4.send("Kuchen", String.valueOf(System.currentTimeMillis()), sec);
 
             sec--;
 
