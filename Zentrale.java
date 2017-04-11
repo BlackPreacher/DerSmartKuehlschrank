@@ -43,23 +43,26 @@ public class Zentrale {
 
             String[] parts = message.split(";");
 
-            //Datumsparser
-            long timeconvert = Long.parseLong(parts[1]);
-            Date time = new Date(timeconvert);
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            String date = sdf.format(timeconvert);
+            String date = "";
 
-            System.out.println("Inhalt: " + parts[0]);
-            System.out.println("Datum: " + date);
-            System.out.println("Menge: " + parts[2] + "\r\n");
+            try{
+                //Datumsparser
+                long timeconvert = Long.parseLong(parts[1]);
+                Date time = new Date(timeconvert);
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                date = sdf.format(timeconvert);
+                System.out.println("Inhalt: " + parts[0]);
+                System.out.println("Datum: " + date);
+                System.out.println("Menge: " + parts[2] + "\r\n");
 
-
-            try {
-                newValue(parts[0], parts[1], Integer.parseInt(parts[2]));
-            }catch(Exception ex){
-                ex.printStackTrace();
+                try {
+                    newValue(parts[0], parts[1], Integer.parseInt(parts[2]));
+                }catch(Exception ex){
+                    ex.printStackTrace();
+                }
+            }catch(Exception e){
+                System.out.println("Fehlerhaftes Paket empfangen\r\n");
             }
-
         }
     }
 

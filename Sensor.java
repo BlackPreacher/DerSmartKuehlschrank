@@ -27,6 +27,7 @@ public class Sensor {
 
     private void send(int menge) throws IOException {
         String sendstring = produkt + ";" + String.valueOf(System.currentTimeMillis()) + ";" + menge;
+        //String sendstring = "Keks";
 
         System.out.println(sendstring);
 
@@ -38,7 +39,7 @@ public class Sensor {
     }
 
     public static void main (String args[]) throws IOException {
-        Sensor s1, s2, s3, s4;
+        Sensor s1;
 
         try{
             s1 = new Sensor(args[0], args[1], args[2]);
