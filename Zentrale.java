@@ -15,7 +15,6 @@ public class Zentrale {
     private DatagramSocket socket;
     private int usedport;
 
-
     public Zentrale() throws IOException {
         usedport = 4711;
         socket = new DatagramSocket(usedport);
@@ -29,6 +28,8 @@ public class Zentrale {
     }
 
     public void receive() throws IOException {
+        System.out.println("Starte Zentrale auf " + InetAddress.getLocalHost() + ":" + usedport);
+
         while (true)
         {
             // Auf Anfrage warten

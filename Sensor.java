@@ -11,19 +11,24 @@ public class Sensor {
 
     private String ip;
     private int usedport;
+    private String produkt;
 
-    public Sensor(String ip, String port){
+    public Sensor(String produkt, String ip, String port){
         this.ip = ip;
         usedport = Integer.parseInt(port);
+        this.produkt = produkt;
     }
 
     public Sensor(){
         ip = "localhost";
         usedport = 4711;
+        produkt = "NULL";
     }
 
-    private void send(String name, String datum, int menge) throws IOException {
-        String sendstring = name + ";" + datum + ";" + menge;
+    private void send(int menge) throws IOException {
+        String sendstring = produkt + ";" + String.valueOf(System.currentTimeMillis()) + ";" + menge;
+
+        System.out.println(sendstring);
 
         InetAddress ia = InetAddress.getByName(ip);
         byte[] data = sendstring.getBytes();
@@ -36,25 +41,15 @@ public class Sensor {
         Sensor s1, s2, s3, s4;
 
         try{
-            s1 = new Sensor(args[0], args[1]);
-            s2 = new Sensor(args[0], args[1]);
-            s3 = new Sensor(args[0], args[1]);
-            s4 = new Sensor(args[0], args[1]);
+            s1 = new Sensor(args[0], args[1], args[2]);
         }catch(Exception e){
             s1 = new Sensor();
-            s2 = new Sensor();
-            s3 = new Sensor();
-            s4 = new Sensor();
         }
 
         int sec = 20;
 
         while(sec > 0){
-            s1.send("Kekse", String.valueOf(System.currentTimeMillis()), sec);
-            s2.send("Bier", String.valueOf(System.currentTimeMillis()), sec);
-            s3.send("Kaese", String.valueOf(System.currentTimeMillis()), sec);
-            s4.send("Kuchen", String.valueOf(System.currentTimeMillis()), sec);
-
+            s1.send(sec);
             sec--;
 
             try {
