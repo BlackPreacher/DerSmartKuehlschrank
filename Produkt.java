@@ -34,7 +34,7 @@ public class Produkt {
     public String getBestand(){
         ArrayList<DataHistory.Eintrag> hist = history.getHistory();
 
-        String returnvalue = "<table>";
+        String returnvalue = "<table border=1>";
         returnvalue += "<tr>";
         returnvalue += "<th>Datum</th>";
         returnvalue += "<th>Produkt</th>";
