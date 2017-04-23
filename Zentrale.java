@@ -1,88 +1,66 @@
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
-import com.sun.net.httpserver.HttpServer;
-
 import java.io.*;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
-
-import static javax.script.ScriptEngine.FILENAME;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.Scanner;
 
 /**
  * Created by Hellhero on 05.04.2017.
  */
 public class Zentrale {
 
-    static class MyHandler implements HttpHandler {
-        @Override
-        public void handle(HttpExchange t) throws IOException {
-
-            String returnvalue = "";
-
-            BufferedReader br = null;
-            FileReader fr = null;
-
-            try {
-                fr = new FileReader("httpfile.html");
-                br = new BufferedReader(fr);
-                String sCurrentLine;
-
-                while ((sCurrentLine = br.readLine()) != null) {
-                    returnvalue += sCurrentLine;
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            } finally {
-                try {
-                    if (br != null)
-                        br.close();
-                    if (fr != null)
-                        fr.close();
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
-            }
-
-            String response = returnvalue;
-            t.sendResponseHeaders(200, response.length());
-            OutputStream os = t.getResponseBody();
-            os.write(response.getBytes());
-            os.close();
-        }
-    }
-
-    public void startWebserver() throws IOException {
-        System.out.println("Starte Webserver " + InetAddress.getLocalHost() + ":" + httpport);
-        HttpServer server = HttpServer.create(new InetSocketAddress(httpport), 0);
-        server.createContext("/", new MyHandler());
-        server.start();
-    }
-
-
     private int listenerport;
     private int httpport;
     private ZentraleSensorListener listener;
 
-    public Zentrale() throws IOException {
+    public Zentrale() throws Exception {
         listenerport = 4711;
-        httpport = 4712;
+        httpport = 80;
         listener = new ZentraleSensorListener(listenerport);
-        (new Thread(listener)).start();
+        new Thread(listener).start();
         startWebserver();
     }
 
-    public Zentrale(String listenerport, String httpport) throws IOException{
+    public Zentrale(String listenerport, String httpport) throws Exception{
         this.listenerport = Integer.parseInt(listenerport);
         this.httpport = Integer.parseInt(httpport);
         listener = new ZentraleSensorListener(this.listenerport);
-        (new Thread(listener)).start();
+        new Thread(listener).start();
         startWebserver();
     }
 
+    public void startWebserver() throws Exception {
+
+        System.out.println("Starte Webserver " + InetAddress.getLocalHost() + ":" + httpport);
+        ServerSocket server = new ServerSocket( httpport );
+        try {
+            while (true){
+                Socket client = server.accept();
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            handleConnection(client);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }).start();
+            }
+        }
+        catch ( InterruptedIOException e)  {
+            e.printStackTrace();
+        }
+    }
+
+    private void handleConnection(Socket client)throws Exception{
+        PrintWriter out = new PrintWriter( client.getOutputStream(), true );
+        out.println(listener.getBestand());
+        client.close();
+    }
 
 
-
-    public static void main (String args[]) throws IOException {
+    public static void main (String args[]) throws Exception {
         Zentrale kuehlschrank;
 
         try{
@@ -91,6 +69,4 @@ public class Zentrale {
             kuehlschrank = new Zentrale();
         }
     }
-
-
 }
