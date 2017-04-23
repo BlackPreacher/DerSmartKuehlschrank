@@ -1,4 +1,6 @@
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 /**
  * Created by Sem on 05.04.2017.
@@ -15,6 +17,12 @@ public class DataHistory {
         history.add(new Eintrag(datum, menge));
     }
 
+    public ArrayList<Eintrag> getHistory(){
+        return history;
+    }
+
+
+
     public class Eintrag{
 
         private String datum;
@@ -26,7 +34,11 @@ public class DataHistory {
         }
 
         public String getDatum() {
-            return datum;
+            //Datumsparser
+            long timeconvert = Long.parseLong(datum);
+            Date time = new Date(timeconvert);
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            return sdf.format(timeconvert);
         }
 
         public int getMenge() {

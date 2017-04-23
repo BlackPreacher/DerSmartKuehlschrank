@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+
 /**
  * Created by Sem on 05.04.2017.
  */
@@ -27,6 +29,29 @@ public class Produkt {
                 return true;
         }
         return false;
+    }
+
+    public String getBestand(){
+        ArrayList<DataHistory.Eintrag> hist = history.getHistory();
+
+        String returnvalue = "<table>";
+        returnvalue += "<tr>";
+        returnvalue += "<th>Datum</th>";
+        returnvalue += "<th>Produkt</th>";
+        returnvalue += "<th>Menge</th>";
+        returnvalue += "</tr>";
+
+        for (DataHistory.Eintrag e: hist) {
+            returnvalue += "<tr>";
+            returnvalue += "<td>" + e.getDatum() + "</td>";
+            returnvalue += "<td>" + name + "</td>";
+            returnvalue += "<td>" + e.getMenge() + "</td>";
+            returnvalue += "</tr>";
+        }
+
+        returnvalue += "</table>";
+
+        return returnvalue;
     }
 
 
