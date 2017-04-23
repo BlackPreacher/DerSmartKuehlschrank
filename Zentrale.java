@@ -9,7 +9,7 @@ import java.text.SimpleDateFormat;
 /**
  * Created by Hellhero on 05.04.2017.
  */
-public class Zentrale {
+public class Zentrale implements Runnable {
 
     private ArrayList<Produkt> alleprodukte;
     private DatagramSocket socket;
@@ -25,6 +25,14 @@ public class Zentrale {
         usedport = Integer.parseInt(port);
         socket = new DatagramSocket(usedport);
         alleprodukte = new ArrayList<>();
+    }
+
+    public void run(){
+        try {
+            receive();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void receive() throws IOException {
@@ -94,7 +102,7 @@ public class Zentrale {
             kuehlschrank = new Zentrale();
         }
 
-        kuehlschrank.receive();
+        (new Thread(kuehlschrank)).start();
 
     }
 
