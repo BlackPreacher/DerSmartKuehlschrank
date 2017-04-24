@@ -5,6 +5,8 @@ import com.sun.net.httpserver.HttpServer;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
 
 import static javax.script.ScriptEngine.FILENAME;
 
@@ -59,6 +61,7 @@ public class Zentrale {
     }
 
 
+
     private int listenerport;
     private int httpport;
     private ZentraleSensorListener listener;
@@ -68,7 +71,9 @@ public class Zentrale {
         httpport = 4712;
         listener = new ZentraleSensorListener(listenerport);
         (new Thread(listener)).start();
-        startWebserver();
+        simpleWebServer ws = new simpleWebServer(8080);
+        (new Thread(ws)).start();
+        //startWebserver();
     }
 
     public Zentrale(String listenerport, String httpport) throws IOException{
@@ -76,7 +81,9 @@ public class Zentrale {
         this.httpport = Integer.parseInt(httpport);
         listener = new ZentraleSensorListener(this.listenerport);
         (new Thread(listener)).start();
-        startWebserver();
+        simpleWebServer ws = new simpleWebServer(8080);
+        (new Thread(ws)).start();
+        //startWebserver();
     }
 
 
