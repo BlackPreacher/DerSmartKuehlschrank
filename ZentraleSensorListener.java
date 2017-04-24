@@ -18,11 +18,11 @@ public class ZentraleSensorListener implements Runnable {
     private int usedport;
 
     public String getBestand() {
-        String returnvalue = "";
+        String returnvalue = "HTTP/1.1 200 Ok \r\n Content-type: text/html\r\n \r\n\r\n <html>";
         for (Produkt p :alleprodukte) {
             returnvalue += p.getBestand();
         }
-        return returnvalue;
+        return returnvalue + "</html>";
     }
 
     private ArrayList<Produkt> alleprodukte;
