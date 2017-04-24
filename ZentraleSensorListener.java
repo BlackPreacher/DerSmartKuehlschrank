@@ -88,26 +88,6 @@ public class ZentraleSensorListener implements Runnable {
         }
 
         alleprodukte.get(habsgefunden).addData(datum, menge);
-        writeHTTPfile();
-    }
-
-    private void writeHTTPfile(){
-        Writer fw = null;
-
-        try{
-            fw = new FileWriter("httpfile.html");
-            fw.write(getBestand());
-        }catch(IOException e){
-            e.printStackTrace();
-        }finally {
-            if(fw != null){
-                try {
-                    fw.close();
-                }catch(IOException e){
-                    e.printStackTrace();
-                }
-            }
-        }
     }
 
     public void run(){
