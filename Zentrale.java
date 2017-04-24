@@ -60,8 +60,6 @@ public class Zentrale {
         server.start();
     }
 
-
-
     private int listenerport;
     private int httpport;
     private ZentraleSensorListener listener;
@@ -81,12 +79,10 @@ public class Zentrale {
         this.httpport = Integer.parseInt(httpport);
         listener = new ZentraleSensorListener(this.listenerport);
         (new Thread(listener)).start();
-        simpleWebServer ws = new simpleWebServer(8080);
+        simpleWebServer ws = new simpleWebServer(this.httpport);
         (new Thread(ws)).start();
         //startWebserver();
     }
-
-
 
 
     public static void main (String args[]) throws IOException {
