@@ -2,6 +2,7 @@ import java.io.*;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 
 /**
  * Created by Hellhero on 05.04.2017.
@@ -54,7 +55,32 @@ public class Zentrale {
 
     private void handleConnection(Socket client)throws Exception{
         PrintWriter out = new PrintWriter( client.getOutputStream(), true );
-        out.println(listener.getBestand());
+        BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
+        ArrayList<String> browserHeader = new ArrayList<>();
+        String browserHeaderTemp;
+        while ((browserHeaderTemp = in.readLine()) != null)
+        {
+            if (browserHeaderTemp.isEmpty()){
+                break;
+            }
+            browserHeader.add(browserHeaderTemp);
+        }
+        for (String bh :browserHeader) {
+            if (bh.contains("GET")){
+                String[] pairs = bh.split(" ");
+                String[] param = pairs[1].split("/");
+                int paramcount = param.length;
+                if (paramcount > 0){
+                    String paramstring = param[1];
+                    if (!paramstring.equals("favicon.ico")){
+                        out.println(listener.getBestandVonProdukt(paramstring));
+                        out.println(listener.getActualBestandVonProdukt(paramstring));
+                    }
+                } else {
+                    out.println(listener.getBestand());
+                }
+            }
+        }
         client.close();
     }
 

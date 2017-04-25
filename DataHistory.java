@@ -21,6 +21,19 @@ public class DataHistory {
         return history;
     }
 
+    public int getNewestMenge(){
+        long latest = 0;
+        int menge = 0;
+        for(Eintrag e:history){
+            if( latest < e.getRawDatum())
+            {
+                latest = e.getRawDatum();
+                menge = e.getMenge();
+            }
+        }
+        return menge;
+    }
+
 
 
     public class Eintrag{
@@ -39,6 +52,10 @@ public class DataHistory {
             Date time = new Date(timeconvert);
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             return sdf.format(timeconvert);
+        }
+
+        public long getRawDatum(){
+            return Long.parseLong(datum);
         }
 
         public int getMenge() {

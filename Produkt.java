@@ -31,6 +31,10 @@ public class Produkt {
         return false;
     }
 
+    public int getActualBestand(){
+        return history.getNewestMenge();
+    }
+
     public String getBestand(){
         ArrayList<DataHistory.Eintrag> hist = history.getHistory();
 

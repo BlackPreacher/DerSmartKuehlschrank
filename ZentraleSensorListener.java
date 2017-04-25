@@ -21,8 +21,30 @@ public class ZentraleSensorListener implements Runnable {
         String returnvalue = "HTTP/1.1 200 Ok \r\n Content-type: text/html\r\n \r\n\r\n <html>";
         for (Produkt p :alleprodukte) {
             returnvalue += p.getBestand();
+            returnvalue += "<p>Aktuelle Menge: " + p.getActualBestand() + " </p>";
+            returnvalue += "<a href=/" + p.getName()+"> " + p.getName() + "</a>";
         }
         return returnvalue + "</html>";
+    }
+
+    public String getBestandVonProdukt(String name){
+        String returnvalue = "HTTP/1.1 200 Ok \r\n Content-type: text/html; charset=utf-8\r\n \r\n\r\n <html>";
+        for (Produkt p :alleprodukte) {
+            if (p.getName().equals(name)){
+                returnvalue += p.getBestand();
+            }
+        }
+        return returnvalue + "</html>";
+    }
+
+    public String getActualBestandVonProdukt(String name){
+        String returnvalue = "<html><p>Aktuelle Menge: ";
+        for (Produkt p :alleprodukte) {
+            if (p.getName().equals(name)){
+                returnvalue += p.getActualBestand();
+            }
+        }
+        return returnvalue + "</p></html>";
     }
 
     private ArrayList<Produkt> alleprodukte;
