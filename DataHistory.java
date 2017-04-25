@@ -8,13 +8,18 @@ import java.util.Date;
 public class DataHistory {
 
     private ArrayList<Eintrag> history;
+    private Eintrag latest = null;
 
     public DataHistory(){
         history = new ArrayList<>();
     }
 
     public void addData(String datum, int menge){
-        history.add(new Eintrag(datum, menge));
+        Eintrag neu = new Eintrag(datum, menge);
+        history.add(neu);
+        if(latest == null || Long.parseLong(datum) > latest.getRawDatum()){
+            latest = neu;
+        }
     }
 
     public ArrayList<Eintrag> getHistory(){
@@ -22,19 +27,8 @@ public class DataHistory {
     }
 
     public int getNewestMenge(){
-        long latest = 0;
-        int menge = 0;
-        for(Eintrag e:history){
-            if( latest < e.getRawDatum())
-            {
-                latest = e.getRawDatum();
-                menge = e.getMenge();
-            }
-        }
-        return menge;
+        return latest.getMenge();
     }
-
-
 
     public class Eintrag{
 

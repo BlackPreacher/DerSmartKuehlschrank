@@ -74,7 +74,7 @@ public class Zentrale {
                     String paramstring = param[1];
                     if (!paramstring.equals("favicon.ico")){
                         out.println(listener.getBestandVonProdukt(paramstring));
-                        out.println(listener.getActualBestandVonProdukt(paramstring));
+                        //out.println(listener.getActualBestandVonProdukt(paramstring));
                     }
                 } else {
                     out.println(listener.getBestand());

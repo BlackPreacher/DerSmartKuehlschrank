@@ -48,7 +48,7 @@ public class Sensor {
 
         int sec = 20;
 
-        while(sec > 0){
+        while(sec >= 0){
             s1.send(sec);
             sec--;
 
