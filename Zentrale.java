@@ -35,7 +35,7 @@ public class Zentrale {
         ServerSocket server = new ServerSocket( httpport );
         try {
             while (true){
-                Socket client = server.accept();
+                final Socket client = server.accept();
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
