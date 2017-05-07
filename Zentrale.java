@@ -11,11 +11,13 @@ public class Zentrale {
 
     private int listenerport;
     private int httpport;
+    private int thriftPort;
     private ZentraleSensorListener listener;
 
     public Zentrale() throws Exception {
         listenerport = 4711;
         httpport = 80;
+        thriftPort = 6666;
         listener = new ZentraleSensorListener(listenerport);
         new Thread(listener).start();
         startWebserver();
@@ -24,12 +26,13 @@ public class Zentrale {
     public Zentrale(String listenerport, String httpport) throws Exception{
         this.listenerport = Integer.parseInt(listenerport);
         this.httpport = Integer.parseInt(httpport);
+        this.thriftPort = 6666;
         listener = new ZentraleSensorListener(this.listenerport);
         new Thread(listener).start();
         startWebserver();
     }
 
-    public void startWebserver() throws Exception {
+     public void startWebserver() throws Exception {
 
         System.out.println("Starte Webserver " + InetAddress.getLocalHost() + ":" + httpport);
         ServerSocket server = new ServerSocket( httpport );
@@ -69,15 +72,29 @@ public class Zentrale {
             if (bh.contains("GET")){
                 String[] pairs = bh.split(" ");
                 String[] param = pairs[1].split("/");
-                int paramcount = param.length;
-                if (paramcount > 0){
+                // Produktansicht
+                if (param.length > 0){
                     String paramstring = param[1];
                     if (!paramstring.equals("favicon.ico")){
-                        out.println(listener.getBestandVonProdukt(paramstring));
+                        // Weitere Parameter in der Anfrage parsen
+                        String [] requests = paramstring.split("&");
+                        for(String str: requests){
+                            // Bestellung parsen
+                            if(str.contains("order")){
+                                String[] values = str.split("=");
+                                System.out.println("Eine Bestellung von " + requests[0] + " über " + values[1] + " wurde erfasst!");
+                                // Ist noch nicht zielführend, da die erfolgte Bestellung noch nicht an den Sensor übertragen wird.
+                                listener.bestelle(requests[0],Integer.parseInt(values[1]));
+                            }
+                        }
+                        out.println(listener.getBestandVonProdukt(requests[0]));
+                        out.println("<a href=\"/"+requests[0]+"&order=10\">Bestelle 10</a>");
                         //out.println(listener.getActualBestandVonProdukt(paramstring));
                     }
                 } else {
+                    // Allgemein Ansicht
                     out.println(listener.getBestand());
+                    out.println(listener.getBestellungen());
                 }
             }
         }
