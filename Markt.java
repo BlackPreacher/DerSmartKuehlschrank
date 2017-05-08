@@ -55,9 +55,9 @@ public class Markt {
         String returnvalue = "<html>";
         //returnvalue += "<a href=\"/\">Home</a><br>";
         returnvalue += "Bestellungen: <br>";
-        returnvalue += "<table border=1 ><th>Produkt</th><th>Preis</th>";
+        returnvalue += "<table border=1 ><th>Produkt</th><th>Menge</th><th>Preis</th>";
         for (Bestellung b : bestellungen) {
-            returnvalue = returnvalue + "<tr><td>" + b.getProdukt() + "</td><td>" + b.getPreis() + "</td></tr>";
+            returnvalue = returnvalue + "<tr><td>" + b.getProdukt() + "</td><td>" +b.getMenge()+ "</td><td>" + b.getPreis() + "</td></tr>";
         }
         returnvalue += "</table>";
         return returnvalue + "</html>";

@@ -45,6 +45,7 @@ public class Sensor {
         //NEW
         // Auf Anfrage warten
         DatagramPacket rcvPacket = new DatagramPacket(new byte[1024], 1024);
+        toSocket.setSoTimeout(6000);
         toSocket.receive(rcvPacket);
 
         // Empfänger auslesen
