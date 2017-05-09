@@ -13,15 +13,17 @@ public class MarktServer {
 	public static price.Processor meinProzessor;
 	private String ipZentrale;
 	private int portZentrale;
+	private int thriftPort;
 
 	public MarktServer() {
-		new MarktServer("localhost","4711");
+		new MarktServer("localhost","4711","6666");
 	}
 
-	public MarktServer(String zentraleIp, String zentralePort) {
+	public MarktServer(String zentraleIp, String zentralePort, String thriftPort) {
 
 		ipZentrale = zentraleIp;
 		portZentrale = Integer.parseInt(zentralePort);
+		this.thriftPort = Integer.parseInt(thriftPort);
 
 		try {
 			connectToZentrale();
@@ -48,7 +50,7 @@ public class MarktServer {
 	}
 
 	private void connectToZentrale() throws IOException {
-		String sendstring = "market;6666";
+		String sendstring = "market;"+Integer.toString(thriftPort);
 
 		System.out.println(sendstring);
 
@@ -78,7 +80,7 @@ public class MarktServer {
 		MarktServer marktServer;
 
 		try{
-			marktServer = new MarktServer (args[0],args[1]);
+			marktServer = new MarktServer (args[0],args[1],args[2]);
 		}catch(Exception e){
 			marktServer = new MarktServer();
 		}

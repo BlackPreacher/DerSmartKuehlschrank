@@ -31,7 +31,7 @@ public class ZentraleSensorListener implements Runnable {
     }
 
     public String getBestandVonProdukt(String name) {
-        String returnvalue = "HTTP/1.1 200 Ok \r\n Content-type: text/html; charset=utf-8\r\n \r\n\r\n <html>";
+        String returnvalue = "HTTP/1.1 200 Ok \r\n Content-type: text/html\r\n \r\n\r\n <html>";
         returnvalue += "<a href=\"/\">Home</a>";
         for (Produkt p : alleprodukte) {
             if (p.getName().equals(name)) {
@@ -137,7 +137,7 @@ public class ZentraleSensorListener implements Runnable {
             } else if (parts[0].equals("market")) {
 
                 // Anmeldevorgang eines Marktes
-                System.out.println("Neuer Markt unter " + sender.toString().replace("/","") + " wurde hinzugefuegt!");
+                System.out.println("Neuer Markt unter " + sender.toString().replace("/","") + ":" +parts[1]+ " wurde hinzugefuegt!");
                 markets.add(new Markt(sender.toString().replace("/",""),parts[1]));
 
             } else if (parts[0].equals("order")) {
@@ -149,8 +149,6 @@ public class ZentraleSensorListener implements Runnable {
                 Bestellung bestellung = bestelle(artikel, menge);
 
                 if(bestellung != null){
-                    bestellungen.add(bestellung);
-
                     System.out.println("Preis: " + Integer.toString(bestellung.getPreis()));
 
                     String returnString = "order;"+Integer.toString(menge);
@@ -158,6 +156,8 @@ public class ZentraleSensorListener implements Runnable {
                     DatagramPacket sendPacket = new DatagramPacket( sendData, sendData.length, packet.getAddress(), packet.getPort());
                     DatagramSocket toSocket = new DatagramSocket();
                     toSocket.send( sendPacket );
+
+                    bestellungen.add(bestellung);
 
                     offeneBestellungen.remove(bestellung);
                 } else {

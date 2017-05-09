@@ -53,7 +53,7 @@ public class Sensor {
         String cont = new String(rcvData, 0, rcvPacket.getLength());
 
         if(cont.equals("OK")) {
-            System.out.println("Recived: " + cont);
+            System.out.println("Received: " + cont);
         } else if(cont.contains("order")){
             String orderMenge = cont.split(";")[1];
             reciveOrder(Integer.parseInt(orderMenge));
@@ -89,7 +89,7 @@ public class Sensor {
         String cont = new String(rcvData, 0, rcvPacket.getLength());
 
         if(cont.equals("OK")){
-            System.out.println("Recived: " + cont);
+            System.out.println("Received: " + cont);
         } else if(cont.contains("order")){
             String orderMenge = cont.split(";")[1];
             reciveOrder(Integer.parseInt(orderMenge));
