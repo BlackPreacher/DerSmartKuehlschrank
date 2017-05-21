@@ -14,12 +14,14 @@ public class MarktServer {
 	private String ipZentrale;
 	private int portZentrale;
 	private int thriftPort;
+	private String brokerIP;
 
 	public MarktServer() {
-		new MarktServer("localhost","4711","6666");
+		new MarktServer("localhost","4711","6666","localhost");
 	}
 
-	public MarktServer(String zentraleIp, String zentralePort, String thriftPort) {
+	public MarktServer(String zentraleIp, String zentralePort, String thriftPort, String brokerIP) {
+		this.brokerIP = brokerIP;
 
 		ipZentrale = zentraleIp;
 		portZentrale = Integer.parseInt(zentralePort);
@@ -32,14 +34,14 @@ public class MarktServer {
 		}
 
 		try{
-			handler = new MarktHandler();
+			handler = new MarktHandler(brokerIP);
 			meinProzessor = new price.Processor(handler);
 			//final int, weil die simple Funktion eine final Variable für den Port erwartet
-			final int thriftPortInt = Integer.ParseInt(thriftPort);
+			final int thriftPortInt = Integer.parseInt(thriftPort);
 
 			Runnable simple = new Runnable(){
 				public void run() {
-					simple(meinProzessor, Integer.parseInt(thriftPortInt));	//Runnable wird mit meinem Prozessor aufgerufen
+					simple(meinProzessor, thriftPortInt);	//Runnable wird mit meinem Prozessor aufgerufen
 				}
 			};
 
@@ -82,7 +84,7 @@ public class MarktServer {
 		MarktServer marktServer;
 
 		try{
-			marktServer = new MarktServer (args[0],args[1],args[2]);
+			marktServer = new MarktServer (args[0],args[1],args[2],args[3]);
 		}catch(Exception e){
 			marktServer = new MarktServer();
 		}
