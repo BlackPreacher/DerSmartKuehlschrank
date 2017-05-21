@@ -135,7 +135,6 @@ public class ZentraleSensorListener implements Runnable {
                     System.out.println("Fehlerhaftes Paket empfangen\r\n");
                 }
             } else if (parts[0].equals("market")) {
-
                 // Anmeldevorgang eines Marktes
                 System.out.println("Neuer Markt unter " + sender.toString().replace("/","") + ":" +parts[1]+ " wurde hinzugefuegt!");
                 markets.add(new Markt(sender.toString().replace("/",""),parts[1]));
