@@ -34,12 +34,10 @@ public class MarktServer {
 		try{
 			handler = new MarktHandler();
 			meinProzessor = new price.Processor(handler);
-			//final int, weil die simple Funktion eine final Variable für den Port erwartet
-			final int thriftPortInt = Integer.ParseInt(thriftPort);
 
 			Runnable simple = new Runnable(){
 				public void run() {
-					simple(meinProzessor, Integer.parseInt(thriftPortInt));	//Runnable wird mit meinem Prozessor aufgerufen
+					simple(meinProzessor, Integer.parseInt(thriftPort));	//Runnable wird mit meinem Prozessor aufgerufen
 				}
 			};
 
