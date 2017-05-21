@@ -1,4 +1,3 @@
-import javax.print.DocFlavor;
 
 /**
  * Created by Hellhero on 06.05.2017.

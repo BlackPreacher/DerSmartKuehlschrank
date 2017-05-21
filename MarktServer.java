@@ -34,10 +34,12 @@ public class MarktServer {
 		try{
 			handler = new MarktHandler();
 			meinProzessor = new price.Processor(handler);
+			//final int, weil die simple Funktion eine final Variable für den Port erwartet
+			final int thriftPortInt = Integer.ParseInt(thriftPort);
 
 			Runnable simple = new Runnable(){
 				public void run() {
-					simple(meinProzessor);	//Runnable wird mit meinem Prozessor aufgerufen
+					simple(meinProzessor, Integer.parseInt(thriftPortInt));	//Runnable wird mit meinem Prozessor aufgerufen
 				}
 			};
 
@@ -61,9 +63,9 @@ public class MarktServer {
 		toSocket.send( packet );
 	}
 
-	private static void simple(price.Processor pro) {
+	private static void simple(price.Processor pro, int thriftPort) {
 		try{
-			TServerTransport serverTransport = new TServerSocket(6666);
+			TServerTransport serverTransport = new TServerSocket(thriftPort);
 			TServer server = new TSimpleServer(new Args(serverTransport).processor(pro));
 
 			System.out.println("Server wartet: ...");

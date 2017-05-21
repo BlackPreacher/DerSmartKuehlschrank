@@ -8,7 +8,6 @@ public class MarktHandler implements price.Iface {
 
 
 	HashMap<String,Integer> preisMapping = new HashMap<>();
-	int preis = -1;
 
 
 	@Override
@@ -16,31 +15,38 @@ public class MarktHandler implements price.Iface {
 		try{
 			System.out.println("Der Artikel " + artikel + " wurde "+Integer.toString(menge)+"x bestellt! Preis: "
 					+ Integer.toString(preisMapping.get(artikel)*menge));
-			preis = -1;
+
+			preisMapping.remove(artikel);
+			preisMapping.put(artikel, generateNewPrice());
 			return preisMapping.get(artikel) * menge;
+
 		} catch (Exception e){
 			artikelPreis(artikel);
 			System.out.println("Der Artikel " + artikel + " wurde "+Integer.toString(menge)+"x bestellt! Preis: "
 					+ Integer.toString(preisMapping.get(artikel)*menge));
-			preis = -1;
+            preisMapping.remove(artikel);
+            preisMapping.put(artikel, generateNewPrice());
 			return preisMapping.get(artikel) * menge;
+
 		}
 	}
 
 	@Override
 	public int artikelPreis(String artikel) throws TException {
 
-		Random rand;
-		if(preis == -1){
-			rand = new Random();
-			preis = rand.nextInt(100);
-		}
+		if(!preisMapping.containsKey(artikel)){
+            preisMapping.put(artikel, generateNewPrice());
+        }
 
-        System.out.println("Der Artikel " + artikel + " wurde angefragt! Preis: " + Integer.toString(preis));
-
-        preisMapping.put(artikel,preis);
+        int preis = preisMapping.get(artikel);
+        System.out.println("Der Artikel " + artikel + " wurde angefragt! Preis: " + preis);
 
 	    return preis;
 
 	}
+
+	private int generateNewPrice(){
+	    Random rand = new Random();
+	    return rand.nextInt(100);
+    }
 }

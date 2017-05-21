@@ -88,94 +88,87 @@ public class ZentraleSensorListener implements Runnable {
 
             String date = "";
 
-            if (!parts[0].equals("order") && !parts[0].equals("market")) {
-                try {
-                    //Datumsparser
-                    long timeconvert = Long.parseLong(parts[1]);
-                    Date time = new Date(timeconvert);
-                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                    date = sdf.format(timeconvert);
-                    System.out.println("Inhalt: " + parts[0] + "\r\n" + "Datum: " + date + "\r\n" + "Menge: " + parts[2] + "\r\n");
+            switch(parts[0]){
+                case "market":
 
+                    // Anmeldevorgang eines Marktes
+                    System.out.println("Neuer Markt unter " + sender.toString().replace("/","") + ":" +parts[1]+ " wurde hinzugefuegt!");
+                    markets.add(new Markt(sender.toString().replace("/",""),parts[1]));
+
+                    break;
+                case "update":
                     try {
-                        if (!parts[0].equals("order") && !parts[0].equals("market")) {
-                            newValue(parts[0], parts[1], Integer.parseInt(parts[2]));
+                        String produktName = parts[1];
+                        String datum = parts[2];
+                        int aktuellerBestand = Integer.parseInt(parts[3]);
+                        int zielBestand = Integer.parseInt(parts[4]);
 
-                            // Keine Bestellungen offen - Sende OK
-                            if(offeneBestellungen.size() == 0){
-                                byte[] sendData = "OK".getBytes();
-                                DatagramPacket sendPacket = new DatagramPacket( sendData, sendData.length, packet.getAddress(), packet.getPort());
-                                DatagramSocket toSocket = new DatagramSocket();
-                                toSocket.send( sendPacket );
-                            } else {
-                                // Wenn noch Bestellungen offen sind, prüfe ob der Sensor zu dem Produkt passt und bestelle
-                                ArrayList<Bestellung> done = new ArrayList<>();
-                                for(Bestellung b: offeneBestellungen){
-                                    System.out.println("Artikel: " + parts[0] + " Bestellung: " + b.getProdukt());
-                                    if(b.getProdukt().equals(parts[0])){
-                                        String returnString = "order;"+Integer.toString(b.getMenge());
+                        //Datumsparser
+                        long timeconvert = Long.parseLong(datum);
+                        Date time = new Date(timeconvert);
+                        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                        date = sdf.format(timeconvert);
+                        System.out.println("Inhalt: " + produktName + "\r\n" + "Datum: " + date + "\r\n" + "Menge: " + aktuellerBestand + "\r\n");
+
+                        try {
+                            newValue(produktName, datum, aktuellerBestand);
+
+                            //Bestelle nach, wenn der Sensor zu wenig hat
+                            if(aktuellerBestand <= 5){
+                                int bestellmenge = zielBestand - aktuellerBestand;
+
+                                int preis = bestelle(produktName, bestellmenge, false);
+
+                                if(preis >= 0){
+                                    System.out.println("Preis pro Produkt: " + preis);
+
+                                    String returnString = "order;"+Integer.toString(bestellmenge);
+                                    byte[] sendData = returnString.getBytes();
+                                    DatagramPacket sendPacket = new DatagramPacket( sendData, sendData.length, packet.getAddress(), packet.getPort());
+                                    DatagramSocket toSocket = new DatagramSocket();
+                                    toSocket.send( sendPacket);
+                                } else {
+                                    System.out.println("Bestellung nicht möglich, da keine Märkte vorhanden sind!");
+                                    byte[] sendData = "no_order".getBytes();
+                                    DatagramPacket sendPacket = new DatagramPacket( sendData, sendData.length, packet.getAddress(), packet.getPort());
+                                    DatagramSocket toSocket = new DatagramSocket();
+                                    toSocket.send( sendPacket );
+                                }
+                            }else{
+                                for (Bestellung b : offeneBestellungen) {
+                                    if(b.getProdukt().equals(produktName)){
+                                        String returnString = "order;"+b.getMenge();
                                         byte[] sendData = returnString.getBytes();
                                         DatagramPacket sendPacket = new DatagramPacket( sendData, sendData.length, packet.getAddress(), packet.getPort());
                                         DatagramSocket toSocket = new DatagramSocket();
-                                        toSocket.send( sendPacket );
-                                        done.add(b);
+                                        toSocket.send( sendPacket);
+                                        offeneBestellungen.remove(b);
+                                        break;
                                     }
                                 }
-                                // Erledigte Bestellung löschen
-                                for(Bestellung b: done){
-                                    offeneBestellungen.remove(b);
-                                }
+
+                                byte[] sendData = "no_order".getBytes();
+                                DatagramPacket sendPacket = new DatagramPacket( sendData, sendData.length, packet.getAddress(), packet.getPort());
+                                DatagramSocket toSocket = new DatagramSocket();
+                                toSocket.send( sendPacket );
                             }
 
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
                         }
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
+                    } catch (Exception e) {
+                        System.out.println("Fehlerhaftes Paket empfangen\r\n");
                     }
-                } catch (Exception e) {
-                    System.out.println("Fehlerhaftes Paket empfangen\r\n");
-                }
-            } else if (parts[0].equals("market")) {
-                // Anmeldevorgang eines Marktes
-                System.out.println("Neuer Markt unter " + sender.toString().replace("/","") + ":" +parts[1]+ " wurde hinzugefuegt!");
-                markets.add(new Markt(sender.toString().replace("/",""),parts[1]));
-
-            } else if (parts[0].equals("order")) {
-
-                // Bestellabwicklung
-                String artikel = parts[1];
-                int menge = Integer.parseInt(parts[2]);
-                System.out.println("Bestellung über " + Integer.toString(menge) + " von " + artikel + " erhalten!");
-                Bestellung bestellung = bestelle(artikel, menge);
-
-                if(bestellung != null){
-                    System.out.println("Preis: " + Integer.toString(bestellung.getPreis()));
-
-                    String returnString = "order;"+Integer.toString(menge);
-                    byte[] sendData = returnString.getBytes();
-                    DatagramPacket sendPacket = new DatagramPacket( sendData, sendData.length, packet.getAddress(), packet.getPort());
-                    DatagramSocket toSocket = new DatagramSocket();
-                    toSocket.send( sendPacket );
-
-                    bestellungen.add(bestellung);
-
-                    offeneBestellungen.remove(bestellung);
-                } else {
-                    System.out.println("Bestellung nicht möglich, da keine Märkte vorhanden sind!");
-
-                    String returnString = "order;"+Integer.toString(0);
-                    byte[] sendData = returnString.getBytes();
-                    DatagramPacket sendPacket = new DatagramPacket( sendData, sendData.length, packet.getAddress(), packet.getPort());
-                    DatagramSocket toSocket = new DatagramSocket();
-                    toSocket.send( sendPacket );
-                }
-
-            } else {
-                System.out.println("Fehlerhaftes Paket!");
+                    break;
+                default:
+                    System.out.println("Test");
+                    break;
             }
         }
     }
 
-    public Bestellung bestelle(String artikel, Integer menge){
+
+    public int bestelle(String artikel, int menge, boolean fromWeb){
 
         int minPreis = 9999;
         Markt cheapestMarket = null;
@@ -189,18 +182,22 @@ public class ZentraleSensorListener implements Runnable {
                 }
             }
         } else {
-            return null;
+            return -1;
         }
 
 
         cheapestMarket.bestelle(artikel,menge);
 
-        System.out.println("Bestellung " + artikel +" über" + Integer.toString(menge) + " abgewickelt.");
+        Bestellung bestellung = new Bestellung(artikel, minPreis, menge);
+        bestellungen.add(bestellung);
 
-        Bestellung bestellung = new Bestellung(artikel,minPreis,menge);
-        offeneBestellungen.add(bestellung);
+        System.out.println("Bestellung von " + menge + "x " + artikel + " abgewickelt.");
 
-        return bestellung;
+        if(fromWeb){
+            offeneBestellungen.add(bestellung);
+        }
+
+        return minPreis;
 
     }
 

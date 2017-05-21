@@ -2,7 +2,6 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.util.Date;
 
 /**
  * Created by Sem on 05.04.2017.
@@ -32,44 +31,7 @@ public class Sensor {
     }
 
     private void send(int menge) throws IOException {
-        String sendstring = produkt + ";" + String.valueOf(System.currentTimeMillis()) + ";" + menge;
-
-        System.out.println(sendstring);
-
-        InetAddress ia = InetAddress.getByName(ip);
-        byte[] data = sendstring.getBytes();
-        DatagramPacket packet = new DatagramPacket( data, data.length, ia, usedport );
-        DatagramSocket toSocket = new DatagramSocket();
-        toSocket.send( packet );
-
-        //NEW
-        // Auf Anfrage warten
-        DatagramPacket rcvPacket = new DatagramPacket(new byte[1024], 1024);
-        toSocket.setSoTimeout(6000);
-        toSocket.receive(rcvPacket);
-
-        // Empfänger auslesen
-        byte[] rcvData = rcvPacket.getData();
-        String cont = new String(rcvData, 0, rcvPacket.getLength());
-
-        if(cont.equals("OK")) {
-            System.out.println("Received: " + cont);
-        } else if(cont.contains("order")){
-            String orderMenge = cont.split(";")[1];
-            reciveOrder(Integer.parseInt(orderMenge));
-            System.out.println("Bestellung über " + orderMenge+ " eingetroffen");
-        }
-
-        toSocket.close();
-
-    }
-
-    private int getBestand(){
-        return bestand;
-    }
-
-    private void order(int menge) throws IOException {
-        String sendstring = "order;"  + produkt + ";" + menge;
+        String sendstring = "update;" + produkt + ";" + String.valueOf(System.currentTimeMillis()) + ";" + menge + ";" + zielBestand;
 
         System.out.println(sendstring);
 
@@ -82,33 +44,35 @@ public class Sensor {
         //NEW
         // Auf Antwort warten
         DatagramPacket rcvPacket = new DatagramPacket(new byte[1024], 1024);
+        toSocket.setSoTimeout(6000);
         toSocket.receive(rcvPacket);
 
         // Empfänger auslesen
         byte[] rcvData = rcvPacket.getData();
         String cont = new String(rcvData, 0, rcvPacket.getLength());
 
-        if(cont.equals("OK")){
-            System.out.println("Received: " + cont);
+        if(cont.equals("no_order")) {
+            System.out.println("Nichts neues...");
         } else if(cont.contains("order")){
             String orderMenge = cont.split(";")[1];
-            reciveOrder(Integer.parseInt(orderMenge));
-            System.out.println("Bestellung über " + orderMenge+ " eingetroffen");
+            receiveOrder(Integer.parseInt(orderMenge));
+            System.out.println("Bestellung von " + orderMenge + " " + produkt + " eingetroffen");
         }
 
         toSocket.close();
+
     }
 
-    private void reciveOrder(int menge){
+    private int getBestand(){
+        return bestand;
+    }
+
+    private void receiveOrder(int menge){
         bestand+=menge;
     }
 
     private void consume() throws IOException {
         bestand--;
-        if(bestand <=5){
-            int bestellmenge = zielBestand - bestand;
-            order(bestellmenge);
-        }
     }
 
     public static void main (String args[]) throws IOException {
