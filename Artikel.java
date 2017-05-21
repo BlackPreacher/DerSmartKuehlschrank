@@ -18,6 +18,10 @@ public class Artikel {
         preis = rand.nextInt(100);
     }
 
+    public void setPreis(int preis){
+        this.preis = preis;
+    }
+
     public int getPreis() {
         return preis;
     }

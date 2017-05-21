@@ -83,7 +83,6 @@ public class Zentrale {
                             if(str.contains("order")){
                                 String[] values = str.split("=");
                                 System.out.println("Eine Bestellung von " + requests[0] + " über " + values[1] + " wurde erfasst!");
-                                // Ist noch nicht zielführend, da die erfolgte Bestellung noch nicht an den Sensor übertragen wird.
                                 listener.bestelle(requests[0],Integer.parseInt(values[1]), true);
                             }
                         }
