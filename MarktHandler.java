@@ -13,11 +13,16 @@ public class MarktHandler implements price.Iface {
 	HashMap<String,Angebot> angebote = new HashMap<>();
 	private String brokerIP;
 	private int marktnummer;
+	private MqttClient mqttClient;
+	int qos = 2;
 
 
 	public MarktHandler(String brokerIP) {
 		this.brokerIP = brokerIP;
 		marktnummer = (int)(Math.random()*Integer.MAX_VALUE);
+		mqttClient = makeMQTTClient();
+		subscribe(mqttClient,"Angebot");
+		subscribe(mqttClient,"Bestellung");
 
 		new Thread(new Runnable() {
 			@Override
@@ -27,7 +32,7 @@ public class MarktHandler implements price.Iface {
 						for (String art : bestand.keySet()) {
 							bestelleNach(art, 10);
 						}
-						Thread.sleep(10000);
+						Thread.sleep((int)(Math.random() * 10000));
 					}
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -35,7 +40,7 @@ public class MarktHandler implements price.Iface {
 			}
 		}).start();
 
-		updateAngebote();
+		//updateAngebote();
 	}
 
 	@Override
@@ -84,7 +89,92 @@ public class MarktHandler implements price.Iface {
 
 	}
 
-	private void updateAngebote(){
+	private MqttClient makeMQTTClient(){
+		String broker = "tcp://"+brokerIP+":1883";
+		String clientId     = "markt"+marktnummer;
+		MemoryPersistence persistence = new MemoryPersistence();
+
+
+		try{
+			MqttClient sampleClient = new MqttClient(broker, clientId, persistence);
+			MqttConnectOptions connOpts = new MqttConnectOptions();
+			connOpts.setCleanSession(true);
+			sampleClient.connect(connOpts);
+			sampleClient.setCallback(new MqttCallback() {
+				@Override
+				public void connectionLost(Throwable throwable) {
+
+				}
+
+				@Override
+				public void messageArrived(String s, MqttMessage mqttMessage) throws Exception {
+					final String toParse = new String(mqttMessage.getPayload());
+					System.out.println("Got: " + toParse);
+					String[] params = toParse.split(";");
+					String typ = params[0];
+					String erzeuger = params[1];
+					String produkt = params[2];
+					String preis = params[3];
+
+					switch (typ){
+						case "sonderangebot":
+						case "angebot":
+							angebote.put(produkt, new Angebot(erzeuger, Integer.parseInt(preis)));
+							break;
+						case "bestaetigung":
+							String markt = erzeuger;
+							int menge = Integer.parseInt(params[5]);
+							if(markt.equals(clientId)){
+								bestandMenge.put(produkt, bestandMenge.get(produkt) + menge);
+								bestand.get(produkt).setPreis(Integer.parseInt(preis) + 10);
+								System.out.println("Bestellung durchgeführt und Bestand aufgefüllt.");
+							}
+
+						default:
+							break;
+					}
+
+				}
+
+				@Override
+				public void deliveryComplete(IMqttDeliveryToken iMqttDeliveryToken) {
+
+				}
+			});
+			return sampleClient;
+		} catch(MqttException me) {
+			System.out.println("reason "+me.getReasonCode());
+			System.out.println("msg "+me.getMessage());
+			System.out.println("loc "+me.getLocalizedMessage());
+			System.out.println("cause "+me.getCause());
+			System.out.println("excep "+me);
+			me.printStackTrace();
+			return null;
+		}
+
+	}
+
+	private void subscribe(MqttClient client, String topic){
+		try {
+			System.out.println("Subsribe: " + topic);
+			client.subscribe(topic);
+		} catch (MqttException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private void publish(MqttClient client, String topic, String message){
+		try {
+			System.out.println("Publish: " + topic);
+			MqttMessage mqttMessage = new MqttMessage(message.getBytes());
+			mqttMessage.setQos(qos);
+			client.publish(topic,mqttMessage);
+		} catch (MqttException e) {
+			e.printStackTrace();
+		}
+	}
+
+	/*private void updateAngebote(){
 		String clientId     = "markt"+marktnummer;
 		String broker       = "tcp://" + brokerIP + ":1883";
 		MemoryPersistence persistence = new MemoryPersistence();
@@ -137,11 +227,21 @@ public class MarktHandler implements price.Iface {
 			System.out.println("excep "+me);
 			me.printStackTrace();
 		}
+	}*/
+
+	private void bestelleNach(String artikel, int menge){
+
+		String erzeuger = angebote.get(artikel).erzeuger;
+
+		String clientId     = "markt"+marktnummer;
+		String content      = "bestellung;" + clientId + ";" + artikel + ";" + menge + ";" + erzeuger;
+
+		publish(mqttClient,"Bestellung",content);
 	}
 
 
 
-	private void bestelleNach(String artikel, int menge){
+	/*private void bestelleNach(String artikel, int menge){
 
 		if(angebote.containsKey(artikel)){
 
@@ -149,6 +249,9 @@ public class MarktHandler implements price.Iface {
 
 			String clientId     = "markt"+marktnummer;
 			String content      = "bestellung;" + clientId + ";" + artikel + ";" + menge + ";" + erzeuger;
+
+			publish(mqttClient,"Bestellung",content);
+
 			int qos             = 2;
 			String broker       = "tcp://" + brokerIP + ":1883";
 			MemoryPersistence persistence = new MemoryPersistence();
@@ -165,7 +268,7 @@ public class MarktHandler implements price.Iface {
 				message.setQos(qos);
 				sampleClient.publish("Bestellung", message);
 
-
+				//-
 				sampleClient.subscribe("Bestellung");
 				sampleClient.setCallback(new MqttCallback() {
 					@Override
@@ -188,10 +291,10 @@ public class MarktHandler implements price.Iface {
 								System.out.println("Subscribe: " + toParse);
 								angebote.put(produkt, new Angebot(erzeuger, Integer.parseInt(preis)));
 
-							/*
+							*//*
 							bestandMenge.put(produkt, bestandMenge.get(produkt) + menge);
 							bestand.get(artikel).setPreis(Integer.parseInt(preis) + 10);
-							System.out.println("Bestellung durchgeführt und Bestand aufgefüllt.");*/
+							System.out.println("Bestellung durchgeführt und Bestand aufgefüllt.");*//*
 								break;
 							default:
 								break;
@@ -221,7 +324,7 @@ public class MarktHandler implements price.Iface {
 		}
 
 
-}
+}*/
 
 
 }
