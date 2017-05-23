@@ -8,8 +8,8 @@ import java.net.*;
 
 public class MarktHandler implements price.Iface {
 
-	HashMap<String,Artikel> bestand = new HashMap<>();
-	HashMap<String,Integer> bestandMenge = new HashMap<>();
+
+	HashMap<String,Ware> bestand = new HashMap<>();
 	HashMap<String,Angebot> angebote = new HashMap<>();
 	private String brokerIP;
 	private int marktnummer;
@@ -46,13 +46,13 @@ public class MarktHandler implements price.Iface {
 	@Override
 	public int bestellung(String artikel, int menge) throws TException {
 		try{
-
-			if(bestandMenge.get(artikel) < menge){
+			Artikel derArtikel = bestand.get(artikel).getArtikel();
+			if(bestand.get(artikel).getMenge() < menge){
 				bestelleNach(artikel,menge);
 			}
 
 			//Warten bis die Bestellung vorbei ist
-			while(bestandMenge.get(artikel) < menge){
+			while(bestand.get(artikel).getMenge() < menge){
 				Thread.sleep(1000);
 			}
 
@@ -61,7 +61,9 @@ public class MarktHandler implements price.Iface {
 					+ Integer.toString(temppreis));
 
 
-			bestandMenge.put(artikel, bestandMenge.get(artikel) - menge);
+			//bestand.put(artikel, bestandMenge.get(artikel) - menge);
+			int neuerBestand = bestand.get(artikel).getMenge() + menge;
+			bestand.put(artikel, new Ware(neuerBestand,derArtikel));
 
 			bestand.get(artikel).generateNewPrice();
 			return temppreis;
@@ -75,9 +77,8 @@ public class MarktHandler implements price.Iface {
 	@Override
 	public int artikelPreis(String artikel) throws TException {
 
-		if(!bestandMenge.containsKey(artikel)){
-			bestand.put(artikel,new Artikel(artikel));
-			bestandMenge.put(artikel,0);
+		if(!bestand.containsKey(artikel)){
+			bestand.put(artikel,new Ware(0,new Artikel(artikel)));
 		}
 
 		if(bestand.containsKey(artikel)){
@@ -91,7 +92,7 @@ public class MarktHandler implements price.Iface {
 
 	private MqttClient makeMQTTClient(){
 		String broker = "tcp://"+brokerIP+":1883";
-		String clientId     = "markt"+marktnummer;
+		final String clientId  = "markt"+marktnummer;
 		MemoryPersistence persistence = new MemoryPersistence();
 
 
@@ -125,7 +126,9 @@ public class MarktHandler implements price.Iface {
 							String markt = erzeuger;
 							int menge = Integer.parseInt(params[5]);
 							if(markt.equals(clientId)){
-								bestandMenge.put(produkt, bestandMenge.get(produkt) + menge);
+								//bestandMenge.put(produkt, bestandMenge.get(produkt) + menge);
+								int neueMenge = bestand.get(produkt).getMenge() + menge;
+								bestand.get(produkt).setMenge(neueMenge);
 								bestand.get(produkt).setPreis(Integer.parseInt(preis) + 10);
 								System.out.println("Bestellung durchgeführt und Bestand aufgefüllt.");
 							}
