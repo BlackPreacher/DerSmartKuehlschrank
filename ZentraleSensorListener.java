@@ -108,7 +108,7 @@ public class ZentraleSensorListener implements Runnable {
                         Date time = new Date(timeconvert);
                         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                         date = sdf.format(timeconvert);
-                        System.out.println("Inhalt: " + produktName + "\r\n" + "Datum: " + date + "\r\n" + "Menge: " + aktuellerBestand + "\r\n");
+                        //System.out.println("Inhalt: " + produktName + "\r\n" + "Datum: " + date + "\r\n" + "Menge: " + aktuellerBestand + "\r\n");
 
                         try {
                             newValue(produktName, datum, aktuellerBestand);

@@ -110,26 +110,31 @@ public class MarktHandler implements price.Iface {
 				@Override
 				public void messageArrived(String s, MqttMessage mqttMessage) throws Exception {
 					final String toParse = new String(mqttMessage.getPayload());
-					System.out.println("Got: " + toParse);
+
 					String[] params = toParse.split(";");
 					String typ = params[0];
 					String erzeuger = params[1];
 					String produkt = params[2];
-					String preis = params[3];
+					int preis = Integer.parseInt(params[3]);
 
 					switch (typ){
 						case "sonderangebot":
 						case "angebot":
-							angebote.put(produkt, new Angebot(erzeuger, Integer.parseInt(preis)));
+							System.out.println("Got: " + toParse);
+							if(!angebote.containsKey(produkt)){
+								angebote.put(produkt, new Angebot());
+							}
+							angebote.get(produkt).addAngebot(erzeuger,preis);
 							break;
 						case "bestaetigung":
 							String markt = erzeuger;
 							int menge = Integer.parseInt(params[5]);
 							if(markt.equals(clientId)){
+								System.out.println("Got: " + toParse);
 								//bestandMenge.put(produkt, bestandMenge.get(produkt) + menge);
 								int neueMenge = bestand.get(produkt).getMenge() + menge;
 								bestand.get(produkt).setMenge(neueMenge);
-								bestand.get(produkt).setPreis(Integer.parseInt(preis) + 10);
+								bestand.get(produkt).setPreis(preis + 10);
 								System.out.println("Bestellung durchgeführt und Bestand aufgefüllt.");
 							}
 
@@ -159,7 +164,7 @@ public class MarktHandler implements price.Iface {
 
 	private void subscribe(MqttClient client, String topic){
 		try {
-			System.out.println("Subsribe: " + topic);
+			System.out.println("Subscribe: " + topic);
 			client.subscribe(topic);
 		} catch (MqttException e) {
 			e.printStackTrace();
@@ -177,157 +182,16 @@ public class MarktHandler implements price.Iface {
 		}
 	}
 
-	/*private void updateAngebote(){
-		String clientId     = "markt"+marktnummer;
-		String broker       = "tcp://" + brokerIP + ":1883";
-		MemoryPersistence persistence = new MemoryPersistence();
 
-		try {
-			MqttClient sampleClient = new MqttClient(broker, clientId, persistence);
-			MqttConnectOptions connOpts = new MqttConnectOptions();
-			connOpts.setCleanSession(true);
-			sampleClient.connect(connOpts);
-			sampleClient.subscribe("Angebot");
-			sampleClient.setCallback(new MqttCallback() {
-				@Override
-				public void connectionLost(Throwable throwable) {
-					throwable.printStackTrace();
-				}
-
-				@Override
-				public void messageArrived(String s, MqttMessage mqttMessage) throws Exception {
-					final String toParse = new String(mqttMessage.getPayload());
-
-					String[] params = toParse.split(";");
-					String typ = params[0];
-					String erzeuger = params[1];
-					String produkt = params[2];
-					String preis = params[3];
-
-					switch (typ){
-						case "angebot":
-							System.out.println("Subscribe: " + toParse);
-							angebote.put(produkt, new Angebot(erzeuger, Integer.parseInt(preis)));
-							break;
-						default:
-							break;
-					}
-				}
-				@Override
-				public void deliveryComplete(IMqttDeliveryToken iMqttDeliveryToken) {
-
-				}
-			});
-
-			//sampleClient.disconnect();
-			//System.out.println("Disconnected");
-			//System.exit(0);
-		} catch(MqttException me) {
-			System.out.println("reason "+me.getReasonCode());
-			System.out.println("msg "+me.getMessage());
-			System.out.println("loc "+me.getLocalizedMessage());
-			System.out.println("cause "+me.getCause());
-			System.out.println("excep "+me);
-			me.printStackTrace();
-		}
-	}*/
 
 	private void bestelleNach(String artikel, int menge){
 
-		String erzeuger = angebote.get(artikel).erzeuger;
+		String erzeuger = angebote.get(artikel).getBillig();
 
 		String clientId     = "markt"+marktnummer;
 		String content      = "bestellung;" + clientId + ";" + artikel + ";" + menge + ";" + erzeuger;
 
 		publish(mqttClient,"Bestellung",content);
 	}
-
-
-
-	/*private void bestelleNach(String artikel, int menge){
-
-		if(angebote.containsKey(artikel)){
-
-			String erzeuger = angebote.get(artikel).erzeuger;
-
-			String clientId     = "markt"+marktnummer;
-			String content      = "bestellung;" + clientId + ";" + artikel + ";" + menge + ";" + erzeuger;
-
-			publish(mqttClient,"Bestellung",content);
-
-			int qos             = 2;
-			String broker       = "tcp://" + brokerIP + ":1883";
-			MemoryPersistence persistence = new MemoryPersistence();
-
-			try {
-				MqttClient sampleClient = new MqttClient(broker, clientId, persistence);
-				MqttConnectOptions connOpts = new MqttConnectOptions();
-				connOpts.setCleanSession(true);
-				sampleClient.connect(connOpts);
-
-
-				System.out.println("Publish: "+content);
-				MqttMessage message = new MqttMessage(content.getBytes());
-				message.setQos(qos);
-				sampleClient.publish("Bestellung", message);
-
-				//-
-				sampleClient.subscribe("Bestellung");
-				sampleClient.setCallback(new MqttCallback() {
-					@Override
-					public void connectionLost(Throwable throwable) {
-						throwable.printStackTrace();
-					}
-
-					@Override
-					public void messageArrived(String s, MqttMessage mqttMessage) throws Exception {
-						final String toParse = new String(mqttMessage.getPayload());
-
-						String[] params = toParse.split(";");
-						String typ = params[0];
-						String erzeuger = params[1];
-						String produkt = params[2];
-						String preis = params[3];
-
-						switch (typ){
-							case "angebot":
-								System.out.println("Subscribe: " + toParse);
-								angebote.put(produkt, new Angebot(erzeuger, Integer.parseInt(preis)));
-
-							*//*
-							bestandMenge.put(produkt, bestandMenge.get(produkt) + menge);
-							bestand.get(artikel).setPreis(Integer.parseInt(preis) + 10);
-							System.out.println("Bestellung durchgeführt und Bestand aufgefüllt.");*//*
-								break;
-							default:
-								break;
-						}
-					}
-
-					@Override
-					public void deliveryComplete(IMqttDeliveryToken iMqttDeliveryToken) {
-
-					}
-				});
-
-				//sampleClient.disconnect();
-				//System.out.println("Disconnected");
-				//System.exit(0);
-			} catch(MqttException me) {
-				System.out.println("reason "+me.getReasonCode());
-				System.out.println("msg "+me.getMessage());
-				System.out.println("loc "+me.getLocalizedMessage());
-				System.out.println("cause "+me.getCause());
-				System.out.println("excep "+me);
-				me.printStackTrace();
-			}
-
-		}else{
-			System.out.println("Es konnte keine Bestellung durchgeführt werden");
-		}
-
-
-}*/
-
 
 }

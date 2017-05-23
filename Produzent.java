@@ -90,7 +90,7 @@ public class Produzent {
 
     private void parseMqttMessage(MqttMessage message) throws Exception{
         final String toParse = new String(message.getPayload());
-        System.out.println("Got: " + toParse);
+
 
         String[] params = toParse.split(";");
         String typ = params[0];
@@ -99,8 +99,9 @@ public class Produzent {
         String menge = params[3];
         switch (typ){
             case "bestellung":
-                if(params[4].equals(clientId)){
 
+                if(params[4].equals(clientId)){
+                    System.out.println("Got: " + toParse);
                     String content = "bestaetigung;" + markt + ";" + produkt + ";" + preis + ";" +  clientId + ";" + menge;
                     publish(mqttClient,"Bestellung",content);
                     System.out.println("Bestellung von Markt " + markt + " über " + menge + " " + produkt + " wurde bei " + clientId + " abgewickelt.");
